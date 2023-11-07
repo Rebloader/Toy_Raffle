@@ -1,56 +1,65 @@
 package org.example;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 
 public class ToyRaffle {
-    private Queue<Toy> toyQueue;
-    Random random;
+    private List<Toy> toys = new ArrayList<>();
+    private WinnerWriter winnerWriter;
+    private int totalToysCount = 0;
 
-    public ToyRaffle() {
-        toyQueue = new PriorityQueue<>((t1, t2) -> t2.getFrequency() - t1.getFrequency());
-        random = new Random();
+
+    public ToyRaffle(WinnerWriter winnerWriter) {
+        this.winnerWriter = winnerWriter;
     }
 
-    public void put(String input) {
-        String[] parts = input.split(" ");
-        if (parts.length == 3) {
-            String id = parts[0];
-            String name = parts[1];
-            int frequency = Integer.parseInt(parts[2]);
-            Toy toy = new Toy(id, name, frequency);
-            toyQueue.offer(toy);
+    public void putToy(Toy toy) {
+        toys.add(toy);
+        totalToysCount += toy.getCountToys();
+        calculateFrequency();
+    }
+
+    public void changeToyCount(int toyId, int newCount) {
+        for (Toy toy : toys) {
+            if (toy.getToyId() == toyId) {
+                toy.setCountToys(newCount);
+                return;
+            }
         }
     }
 
-    public String get() {
-        int randomNumber = random.nextInt(101);
-        if (randomNumber <= 20) {
-            return "1";
-        } else if (randomNumber <= 40) {
-            return "2";
-        } else {
-            Toy toy = toyQueue.poll();
-            if (toy != null) {
-                return toy.getToyId();
+    public List<Toy> showAllToys() {
+        return toys;
+    }
+
+    public Toy runRaffle() {
+        double totalFrequency = toys.stream().mapToDouble(Toy::getFrequency).sum();
+        double randomValue = Math.random() * totalFrequency;
+
+        for (Toy toy : toys) {
+            randomValue -= toy.getFrequency();
+            if (randomValue <= 0) {
+                Toy prizeToy = toy;
+                removeToy(toy);
+                winnerWriter.writeWinner(prizeToy);
+                return prizeToy;
             }
+        }
+
+        if (toys.isEmpty()) {
+            System.out.println("Игрушки кончились.");
+            return null;
         }
         return null;
     }
+    public void removeToy(Toy toy) {
+        toys.remove(toy);
+        toy.setCountToys(toy.getCountToys() - 1);
+    }
 
-    public void runRaffle() {
-        try (FileWriter writer = new FileWriter("results.txt")) {
-            for (int i = 0; i < 10; i++) {
-                Toy toy = toyQueue.poll();
-                if (toy != null) {
-                    writer.write("Winner: " + toy.getToyName() + "\n");
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void calculateFrequency() {
+        for (Toy toy : toys) {
+            toy.setFrequency((double) toy.getCountToys() / totalToysCount * 100);
         }
     }
 }
+

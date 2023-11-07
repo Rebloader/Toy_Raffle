@@ -1,18 +1,21 @@
 package org.example;
 
 public class Toy {
-    private String toyId;
+    private int toyId;
     private String toyName;
-    private int frequency;
+    private int countToys; // количество
+    private double frequency; // частота выпадения
 
 
-    public Toy(String toyId, String toyName, int frequency) {
+    public Toy(int toyId, String toyName, int countToys) {
         this.toyId = toyId;
         this.toyName = toyName;
-        this.frequency = frequency;
+        this.countToys = countToys;
+
     }
 
-    public String getToyId() {
+
+    public int getToyId() {
         return toyId;
     }
 
@@ -20,8 +23,27 @@ public class Toy {
         return toyName;
     }
 
-    public int getFrequency() {
+    public int getCountToys() {
+        return countToys;
+    }
+
+    public void setCountToys(int countToys) {
+        this.countToys = countToys;
+    }
+
+    public double getFrequency() {
         return frequency;
     }
 
+    public void setFrequency(double frequency) {
+        this.frequency = frequency;
+    }
+
+    @Override
+    public String toString() {
+        return "ID:" + toyId +
+                ", наименование: '" + toyName + '\'' +
+                ", количество: " + countToys +
+                ", частота выпадения" + frequency;
+    }
 }
